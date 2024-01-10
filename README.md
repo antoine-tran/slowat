@@ -1,43 +1,17 @@
-# :plate_with_cutlery: A Getting Started Recipe 
-<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.11+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
+# :loud_sound: Slowat: Proactive Localized Watermarking
+<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.9+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
 
-> a recipe to jumpstart your exploratory research at FAIR :earth_africa:
+We introduce AudioSeal, a method for speech localized watermarking. It jointly trains a generator that embeds a watermark in the audio, and a detector that detects it at the sample level, even in the presence of editing. Slowat achieves state-of-the-art detection performance  of both natural and synthetic speech at the sample level, it generates limited alteration of signal quality and is robust to many types of audio editing.
 
-# Preparation
-<details > 
-<summary> New to FAIR? Get set up on the cluster & GitHub!
-</summary>
+<p align="center">
+<img src="./architecture.png" alt="Schema representing the structure of Slowat"width="800px">
+</p>
 
-1. Get Access to the FAIR Cluster: [FAIR Clusters Wiki](https://www.internalfb.com/intern/wiki/FAIR/Platforms/Clusters/FAIRClusters/)
-
-2. (Optional But Recommended): Set up Eternal Terminal (ET) to connect to the cluster without passwords (using SSH keys). [ET Wiki](https://www.internalfb.com/intern/wiki/FAIR/Platforms/Clusters/FAIRClusters/Persist_SSH_Connection_with_ET/)
-
-3. Link your github account with Facebook in order to access internal repositories (or make your own!): [FB GitHub Wiki](https://www.internalfb.com/intern/wiki/Open_Source/Contribute_to_FB_OSS_Project/Linking_Your_GitHub_Account/)
-  
-</details> 
 
 # :mate: Installation
 
-1. Create a new repo based on this template 
-     -  <details> <summary> Add to personal repository </summary>  
-      
-        1. Click "Use This Template" [![template](https://github.com/fairinternal/fair-getting-started-recipe/assets/6558776/4aa5005a-7f64-4ea6-acba-cab7563b20ba)](https://github.com/new?owner=fairinternal&template_name=fair-getting-started-recipe&template_owner=fairinternal)
-
-        2. Click "Create a new repository" and select your github has the repository owner. 
-
-        3. Clone your repository to your dev machine with ssh using 'git clone <copied ssh url path>'. If you encounter errors, this [wiki](https://www.internalfb.com/intern/wiki/FAIR/Platforms/Getting_started/fairinternal-github/#how-to-access-github-fro) may be helpful to debug ssh key issues.  
-
-      - <details> <summary> Add to FAIR Internal Repository </summary>  
-      
-        1. Make a new github repository for your project on the FAIR Internal GitHub: [Wiki for FAIR Internal GitHub](https://www.internalfb.com/intern/wiki/FAIR/Platforms/Getting_started/fairinternal-github/)
-
-        2. TODO: how to add template to an existing repo??
-
-      </details>
-       
-
-2. Install packages in a conda environment
+1. Install packages in a conda environment
     - Conda is a common package management system, and it's recommended that you make a new conda environment for each project, and install all packages (e.g. pytorch, matplotlib) within your project's environment. Conda should be installed on your dev machine, and if needed, you can find more about using conda at FAIR [here](https://www.internalfb.com/intern/wiki/FAIR/Platforms/Clusters/FAIRClusters/FAIRClusterFAQ/#managing-the-software-en) and a command cheat sheet [here](https://docs.conda.io/projects/conda/en/4.6.0/_downloads/52a95608c49671267e40c689e0bc00ca/conda-cheatsheet.pdf). 
     - `cd` into repo directory `cd my_repository`
     - Install a starter set of packages: 
@@ -53,10 +27,34 @@
       6. `pip install -e .`      
     </details>
 
-# :yum: Benefits of this recipe 
-This recipe is designed to provide the backbone code for running scripts on the FAIR cluster. It also contains some quick guides for accessing research datasets and logging experiments! Here are some of the main functions built in:
+# :abacus: Usage
 
-:rocket:	Launch an experiment: 
+skowat provides a simple API to watermark and detect the watermarkings from an audio sample. Example usage:
+
+```python
+
+from slowat.models import Watermarker
+
+model = Watermarker.from_pretrained("facebook/audioseal_16bits")
+
+# Other way is to load directly from the checkpoint
+# model =  Watermarker.from_pretrained(checkpoint_path, device = wav.device)
+
+watermark = model.get_watermark(wav)
+watermarked_audio = wav + watermark
+
+# Generate the secret kbits messages as a tensor of shape (batch, k)
+message (torch.Tensor): Message to encode in the audio signal of shape (B, nbits).
+
+detection = model.detect_watermark(watermarked_audio)
+
+print(detection[:,1,:])  # print prob of watermarked class # should be > 0.5
+
+
+```python
+
+```
+
 
 `python main.py -m mode=local`
 
@@ -74,7 +72,9 @@ This recipe is designed to provide the backbone code for running scripts on the 
 
 :white_check_mark:	 Basic unit tests built-in: `python -m pytest tests/`
 
-# :ice_cube: Code Organization
+# :ice_cube: Evaluation
+
+Our evaluation 
 
 The repo structures code around three compoenents common to most machine learning research: 1) Data, 2) Model, 3) Experiment Logic
 

@@ -1,3 +1,0 @@
-# @package _global_
-module:
-  _target_: models.CNN
