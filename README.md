@@ -33,9 +33,9 @@ skowat provides a simple API to watermark and detect the watermarkings from an a
 
 ```python
 
-from slowat.models import Watermarker
+from audioseal import AudioSeal
 
-model = Watermarker.from_pretrained("facebook/audioseal_16bits")
+model = AudioSeal.load_generator("facebook/audioseal_wm_16bits")
 
 # Other way is to load directly from the checkpoint
 # model =  Watermarker.from_pretrained(checkpoint_path, device = wav.device)
@@ -46,7 +46,10 @@ watermarked_audio = wav + watermark
 # Generate the secret kbits messages as a tensor of shape (batch, k)
 message (torch.Tensor): Message to encode in the audio signal of shape (B, nbits).
 
-detection = model.detect_watermark(watermarked_audio)
+
+# To detect the messages
+detector = AudioSeal.load_detector("facebook/audioseal_detector_16bits)
+detection = detector(watermarked_audio)
 
 print(detection[:,1,:])  # print prob of watermarked class # should be > 0.5
 
