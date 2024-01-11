@@ -4,7 +4,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import Optional
+from typing import Optional, Tuple
 import math
 import torch
 from audiocraft.modules.seanet import SEANetEncoder
@@ -50,7 +50,7 @@ class AudioSealWM(torch.nn.Module):
         encoder: torch.nn.Module,
         decoder: torch.nn.Module,
         msg_processor: Optional[torch.nn.Module] = None,
-
+        auto_message: bool = False,
     ):
         super().__init__()
         self.encoder = encoder
@@ -58,6 +58,11 @@ class AudioSealWM(torch.nn.Module):
         # The build should take care of validating the dimensions between component
         self.msg_processor = msg_processor
 
+    @property
+    def message(self):
+        if auto_message:
+
+    
     def get_watermark(
         self, x: torch.Tensor, message: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
@@ -123,8 +128,15 @@ class AudioSealDectector(torch.nn.Module):
         last_layer = torch.nn.Conv1d(encoder.output_dim, 2 + nbits, 1)
         self.detector = torch.nn.Sequential(encoder, last_layer)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def decode_message(self, result: torch.Tensor):
+        ...
+
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
         result = self.detector(x)  # b x 2+nbits
         # hardcode softmax on 2 first units used for detection
+        # TODO: Add extra logic to handle the secret message when the detector
+        # detects no watermarking
         result[:, :2, :] = torch.softmax(result[:, :2, :], dim=1)
-        return result
+
+        # TODO: Return the result and the message as a tuple
+        return result[:, :2, :], result[:, 2:, :]
