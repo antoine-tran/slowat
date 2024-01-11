@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Dict, List, Literal, Optional
 from typing_extensions import TypeAlias
 
 from torch import device, dtype
@@ -19,18 +19,66 @@ DataType: TypeAlias = dtype
 
 
 @dataclass
-class AudioSealDetectorConfig:
+class SEANetConfig:
     """
-    Hold the configuration for the AudioSealDetector.
-    Most of the params below are for the underlying
-    SEANetEncoder model
+    Map common hparams of SEANet encoder and decoder
     """
-    dummy: int
+    channels: int
+    dimension: int
+    n_filters: int
+    n_residual_layers: int
+    ratios: List[int]
+    activation: str
+    activation_params: Dict[str, float]
+    norm: Literal["none", "weight_norm", "spectral_norm", "time_group_norm"]
+    norm_params: Dict[str, Any]
+    kernel_size: int
+    last_kernel_size: int
+    residual_kernel_size: int
+    dilation_base: int
+    causal: bool
+    pad_mode: str
+    true_skip: bool
+    compress: int
+    lstm: int
+    disable_norm_outer_blocks: int
+
+
+@dataclass
+class EncoderConfig:
+    ...
+
+
+@dataclass
+class DecoderConfig:
+    final_activation: Optional[str]
+    final_activation_params: Optional[dict]
+    trim_right_ratio: float
+
+
+@dataclass
+class DetectorConfig:
+    output_dim: int
 
 
 @dataclass
 class AudioSealWMConfig:
-    ...
+    sample_rate: int
+    channels: int
+    nbits: int
+    seanet: SEANetConfig
+    encoder: EncoderConfig
+    decoder: DecoderConfig
+
+
+@dataclass
+class AudioSealDetectorConfig:
+    sample_rate: int
+    channels: int
+    nbits: int
+    seanet: SEANetConfig
+    detector: DetectorConfig
+
 
 
 def create_generator(
@@ -40,7 +88,6 @@ def create_generator(
     dtype: Optional[DataType] = None,
 ) -> AudioSealWM:
     ...
-
 
 
 def create_detector(
