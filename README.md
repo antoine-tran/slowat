@@ -44,19 +44,14 @@ watermark = model.get_watermark(wav)
 watermarked_audio = wav + watermark
 
 # Generate the secret kbits messages as a tensor of shape (batch, k)
-message (torch.Tensor): Message to encode in the audio signal of shape (B, nbits).
+>>> message (torch.Tensor): Message to encode in the audio signal of shape (B, nbits).
 
 
 # To detect the messages
 detector = AudioSeal.load_detector("facebook/audioseal_detector_16bits)
-detection = detector(watermarked_audio)
+result, message = detector(watermarked_audio)
 
 print(detection[:,1,:])  # print prob of watermarked class # should be > 0.5
-
-
-```python
-
-```
 
 
 `python main.py -m mode=local`
